@@ -6,7 +6,7 @@ import {
   getUserProfile,
   loginUser,
   logoutUser,
-  refreshToken,
+  refreshAccessToken,
   registerUser,
   resetPassword,
   updateUserProfile,
@@ -20,7 +20,7 @@ const userRouter = router;
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/verify-email", verifyEmail);
-router.post("/refresh-token", refreshToken);
+router.post("/refresh-token", refreshAccessToken);
 
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);

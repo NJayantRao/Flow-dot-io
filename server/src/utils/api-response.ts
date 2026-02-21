@@ -2,8 +2,8 @@ class ApiResponse<T> {
   statusCode: number;
   success: boolean;
   message: string;
-  data: T;
-  constructor(statusCode: number, message: string, data: T) {
+  data?: T | undefined;
+  constructor(statusCode: number, message: string, data?: T) {
     this.statusCode = statusCode;
     this.message = message;
     this.data = data;
