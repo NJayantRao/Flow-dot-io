@@ -7,7 +7,10 @@ import ApiResponse from "../utils/api-response.js";
 import AsyncHandler from "../utils/async-handler.js";
 import {comparePassword, hashPassword} from "../utils/bcrypt.js";
 import crypto from "crypto";
-import {sendRegistrationEmail} from "../utils/userMail.js";
+import {
+  sendRegistrationEmail,
+  sendResetPasswordMail,
+} from "../utils/userMail.js";
 
 /**
  * @route POST /auth/register
@@ -74,7 +77,7 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
   //generate verify email
   const verificationToken = crypto.randomBytes(32).toString("hex");
   await client.set(`verify-token:${user.id}`, verificationToken, {EX: 10 * 60});
-  const verificationLink = `${req.protocol}://${req.get("host")}/api/v1/verify-email?id=${user.id}&verify=${verificationToken}`;
+  const verificationLink = `${req.protocol}://${req.get("host")}/api/v1/auth/verify-email?id=${user.id}&verifyToken=${verificationToken}`;
   await sendRegistrationEmail(user.email, user.username, verificationLink);
 
   return res.status(201).json(
@@ -144,25 +147,31 @@ export const loginUser = AsyncHandler(async (req: any, res: any) => {
  * @access public
  */
 export const verifyEmail = AsyncHandler(async (req: any, res: any) => {
-  /*
-1. get verification token from the query 
-2. get verify-email token from redis
-3. check whether they are matched or not 
-4. if matched then update user info. as isVerified= true
-5. send response
-*/
+  const {id, verifyToken} = req.query;
+
+  // console.log(id,verify);
+
+  const storedVerifyToken = await client.get(`verify-token:${id}`);
+
+  if (verifyToken !== storedVerifyToken) {
+    return res.status(400).json(new ApiError(400, "Email verification failed"));
+  }
+
+  const user = await prisma.user.update({
+    where: {id},
+    data: {isVerified: true},
+  });
+
+  await client.del(`verify-token:${user.id}`);
+
+  res.status(200).json(new ApiResponse(200, "Email verified successfully"));
 });
 
 /**
  * @route POST /auth/logout
  * @desc logout user controller
- * @access public
+ * @access private
  */
-/*
-1. clear all cookies of the user
-2. clear refresh token from redis also
-3. send response
-  */
 export const logoutUser = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
   const options = {
@@ -200,8 +209,7 @@ export const refreshAccessToken = AsyncHandler(async (req: any, res: any) => {
  * @desc forgot password controller
  * @access public
  */
-export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
-  /*
+/*
 1. get email from req.body
 2. find user from db
 3. generate 6-digit otp
@@ -209,6 +217,21 @@ export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
 5. send otp in email
 6. send response
   */
+export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
+  const {email} = req.body;
+  const user = await prisma.user.findUnique({where: {email}});
+
+  if (!user) {
+    return res.status(404).json(new ApiError(404, "User not found"));
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000);
+  await client.set(`verify-otp:${user.email}`, otp, {EX: 10 * 60});
+  await sendResetPasswordMail(user.email, user.username, otp);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "OTP sent to email successfully", otp));
 });
 
 /**
@@ -216,8 +239,7 @@ export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
  * @desc reset password controller
  * @access public
  */
-export const resetPassword = AsyncHandler(async (req: any, res: any) => {
-  /*
+/*
 1. get data from req.body
 2. get otp from redis 
 3. verify otp
@@ -225,4 +247,31 @@ export const resetPassword = AsyncHandler(async (req: any, res: any) => {
 5. delete otp
 6. send response
  */
+export const resetPassword = AsyncHandler(async (req: any, res: any) => {
+  const {email, otp, newPassword} = req.body;
+
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json(new ApiError(400, "All fields are required"));
+  }
+
+  const storedOtp = await client.get(`verify-otp:${email}`);
+
+  if (!storedOtp || otp.toString() !== storedOtp) {
+    return res.status(400).json(new ApiError(400, "Invalid  OTP"));
+  }
+
+  const hashedPassword = await hashPassword(newPassword);
+
+  const user = await prisma.user.update({
+    where: {
+      email,
+    },
+    data: {password: hashedPassword},
+  });
+
+  await client.del(`verify-otp:${email}`);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Password reset successfully"));
 });

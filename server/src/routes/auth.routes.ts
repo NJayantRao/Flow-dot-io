@@ -10,6 +10,7 @@ import {
   verifyEmail,
 } from "../controllers/auth.controller.js";
 import {
+  resetPasswordValidation,
   userLoginValidation,
   userRegistrationValidation,
 } from "../middlewares/validator.js";
@@ -23,7 +24,7 @@ router.get("/verify-email", verifyEmail);
 router.post("/refresh-token", refreshAccessToken);
 
 router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", resetPassword);
+router.post("/reset-password", resetPasswordValidation, resetPassword);
 router.get("/logout", authMiddleware, logoutUser);
 
 export {authRouter};

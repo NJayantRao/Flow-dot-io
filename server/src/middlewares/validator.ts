@@ -35,3 +35,13 @@ export const userLoginValidation = [
     .withMessage("Password must be at least 8 characters long"),
   validateResult,
 ];
+
+export const resetPasswordValidation = [
+  body("email").isEmail().withMessage("Please enter a valid email address"),
+  body("newPassword")
+    .isString()
+    .withMessage("Password must be a string")
+    .isLength({min: 8})
+    .withMessage("Password must be at least 8 characters long"),
+  validateResult,
+];
