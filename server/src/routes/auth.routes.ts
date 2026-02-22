@@ -9,18 +9,21 @@ import {
   resetPassword,
   verifyEmail,
 } from "../controllers/auth.controller.js";
-import {userRegistrationValidation} from "../middlewares/validator.js";
+import {
+  userLoginValidation,
+  userRegistrationValidation,
+} from "../middlewares/validator.js";
 
 const router = express.Router();
 const authRouter = router;
 
 router.post("/register", userRegistrationValidation, registerUser);
-router.post("/login", loginUser);
+router.post("/login", userLoginValidation, loginUser);
 router.get("/verify-email", verifyEmail);
 router.post("/refresh-token", refreshAccessToken);
 
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
-router.post("/logout", authMiddleware, logoutUser);
+router.get("/logout", authMiddleware, logoutUser);
 
 export {authRouter};

@@ -6,7 +6,7 @@ const authMiddleware = async (req: any, res: any, next: any) => {
   try {
     const authorization = req.headers.authorization;
 
-    const token = req?.cookies?.token || authorization?.split(" ")[1];
+    const token = req?.cookies?.accessToken || authorization?.split(" ")[1];
 
     if (!token) {
       return res.status(401).json(new ApiError(401, "Unauthorized request"));

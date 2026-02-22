@@ -15,5 +15,5 @@ export const sendRegistrationEmail = async (
     html: html,
   });
 
-  console.log(info);
+  // console.log(info);
 };
