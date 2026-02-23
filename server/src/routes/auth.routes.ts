@@ -16,7 +16,6 @@ import {
 } from "../middlewares/validator.js";
 
 const router = express.Router();
-const authRouter = router;
 
 router.post("/register", userRegistrationValidation, registerUser);
 router.post("/login", userLoginValidation, loginUser);
@@ -27,4 +26,4 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPasswordValidation, resetPassword);
 router.get("/logout", authMiddleware, logoutUser);
 
-export {authRouter};
+export {router as authRouter};

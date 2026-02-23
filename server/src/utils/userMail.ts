@@ -7,16 +7,20 @@ export const sendRegistrationEmail = async (
   username: string,
   verifyLink: string
 ) => {
-  const {html, text} = generateRegistrationEmail(username, verifyLink);
-  const info = await resend.emails.send({
-    from: "Flow <onboarding@nagriksetu.site>",
-    to: email,
-    subject: "Welcome to Flow!",
-    text: text,
-    html: html,
-  });
+  try {
+    const {html, text} = generateRegistrationEmail(username, verifyLink);
+    const info = await resend.emails.send({
+      from: "Flow <onboarding@nagriksetu.site>",
+      to: email,
+      subject: "Welcome to Flow!",
+      text: text,
+      html: html,
+    });
 
-  // console.log(info);
+    // console.log(info);
+  } catch (error) {
+    console.error("Error sending registration email:", error);
+  }
 };
 
 export const sendResetPasswordMail = async (

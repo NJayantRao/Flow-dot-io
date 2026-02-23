@@ -15,7 +15,7 @@ client.on("connect", () => {
 });
 
 client.on("error", (err) => {
-  console.log("Redis connection error: ", err);
+  console.error("Redis connection error: ", err);
 });
 await client.connect();
 

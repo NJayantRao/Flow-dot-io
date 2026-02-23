@@ -13,12 +13,17 @@ const validateResult = async function (req: any, res: any, next: any) {
 
 export const userRegistrationValidation = [
   body("username")
+    .trim()
     .isString()
     .withMessage("User name must be a string")
     .isLength({min: 3})
     .withMessage("User name must be at least 3 characters long"),
-  body("email").isEmail().withMessage("Please enter a valid email address"),
+  body("email")
+    .trim()
+    .isEmail()
+    .withMessage("Please enter a valid email address"),
   body("password")
+    .trim()
     .isString()
     .withMessage("Password must be a string")
     .isLength({min: 8})
@@ -27,9 +32,13 @@ export const userRegistrationValidation = [
 ];
 
 export const userLoginValidation = [
-  body("email").isEmail().withMessage("Please enter a valid email address"),
+  body("email")
+    .trim()
+    .isEmail()
+    .withMessage("Please enter a valid email address"),
   body("password")
     .isString()
+    .trim()
     .withMessage("Password must be a string")
     .isLength({min: 8})
     .withMessage("Password must be at least 8 characters long"),
@@ -37,8 +46,12 @@ export const userLoginValidation = [
 ];
 
 export const resetPasswordValidation = [
-  body("email").isEmail().withMessage("Please enter a valid email address"),
+  body("email")
+    .trim()
+    .isEmail()
+    .withMessage("Please enter a valid email address"),
   body("newPassword")
+    .trim()
     .isString()
     .withMessage("Password must be a string")
     .isLength({min: 8})
@@ -48,6 +61,7 @@ export const resetPasswordValidation = [
 
 export const usernameUpdateValidation = [
   body("username")
+    .trim()
     .isString()
     .withMessage("User name must be a string")
     .isLength({min: 3})

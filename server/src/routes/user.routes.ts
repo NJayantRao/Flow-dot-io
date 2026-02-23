@@ -8,7 +8,6 @@ import {authMiddleware} from "../middlewares/jwt.js";
 import {usernameUpdateValidation} from "../middlewares/validator.js";
 
 const router = express.Router();
-const userRouter = router;
 
 router.get("/profile", authMiddleware, getUserProfile);
 router.patch(
@@ -19,4 +18,4 @@ router.patch(
 );
 router.delete("/", authMiddleware, deleteUser);
 
-export {userRouter};
+export {router as userRouter};

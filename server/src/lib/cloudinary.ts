@@ -10,7 +10,7 @@ cloudinary.config({
 });
 
 export const uploadFileToCloudinary = async (
-  fileBuffer: any,
+  fileBuffer: Buffer,
   folder: string
 ) => {
   return new Promise((resolve, reject) => {

@@ -41,13 +41,6 @@ export const getUserProfile = AsyncHandler(async (req: any, res: any) => {
  * @desc update user profile controller
  * @access private
  */
-/*
-1. get userId from req.user.id
-2. get data from req.body
-3. validate data
-4. update data in db
-5. send response
-  */
 export const updateUserProfile = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
 
@@ -63,13 +56,13 @@ export const updateUserProfile = AsyncHandler(async (req: any, res: any) => {
   }
   const {username} = req.body;
 
-  const users = await prisma.user.findMany({
+  const users = await prisma.user.findFirst({
     where: {username},
     select: {
       username: true,
     },
   });
-  if (users.length > 0) {
+  if (users) {
     return res.status(400).json({message: "Username already exists"});
   }
 
@@ -93,8 +86,8 @@ export const updateUserProfile = AsyncHandler(async (req: any, res: any) => {
 export const deleteUser = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
 
-  await client.del(`refresh-token:${userId}`);
   await prisma.user.delete({where: {id: userId}});
+  await client.del(`refresh-token:${userId}`);
   res.clearCookie("accessToken");
   res.clearCookie("refreshToken");
 

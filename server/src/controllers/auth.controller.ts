@@ -11,7 +11,9 @@ import {
   sendRegistrationEmail,
   sendResetPasswordMail,
 } from "../utils/userMail.js";
-import jwt, {type JwtPayload} from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import type {Request, Response, NextFunction} from "express";
+import {options} from "../utils/constants.js";
 
 /**
  * @route POST /auth/register
@@ -61,12 +63,6 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
-
-  const options = {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: ENV.NODE_ENV === "PRODUCTION",
-  };
 
   res.cookie("accessToken", accessToken, options);
   res.cookie("refreshToken", refreshToken, options);
@@ -120,12 +116,6 @@ export const loginUser = AsyncHandler(async (req: any, res: any) => {
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
-  const options = {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: ENV.NODE_ENV === "PRODUCTION",
-  };
-
   res.cookie("accessToken", accessToken, options);
   res.cookie("refreshToken", refreshToken, options);
 
@@ -137,7 +127,6 @@ export const loginUser = AsyncHandler(async (req: any, res: any) => {
     new ApiResponse(200, "User logged in successfully...", {
       accessToken,
       refreshToken,
-      user,
     })
   );
 });
@@ -175,11 +164,7 @@ export const verifyEmail = AsyncHandler(async (req: any, res: any) => {
  */
 export const logoutUser = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
-  const options = {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: ENV.NODE_ENV === "PRODUCTION",
-  };
+
   res.clearCookie("accessToken", options);
   res.clearCookie("refreshToken", options);
 
@@ -209,7 +194,7 @@ export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "OTP sent to email successfully", otp));
+    .json(new ApiResponse(200, "OTP sent to email successfully"));
 });
 
 /**
@@ -251,7 +236,7 @@ export const resetPassword = AsyncHandler(async (req: any, res: any) => {
  * @desc Refresh access token controller
  * @access public
  */
-export const refreshAccessToken = async (req: any, res: any) => {
+export const refreshAccessToken = async (req: Request, res: Response) => {
   try {
     const authorization = req?.headers?.authorization;
     const refreshToken =
@@ -281,11 +266,6 @@ export const refreshAccessToken = async (req: any, res: any) => {
     const accessToken = jwt.sign({id, email}, ENV.ACCESS_TOKEN_SECRET, {
       expiresIn: "15m",
     });
-    const options = {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: ENV.NODE_ENV === "PRODUCTION",
-    };
 
     res.cookie("accessToken", accessToken, options);
 
