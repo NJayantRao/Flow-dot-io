@@ -13,23 +13,6 @@ export const createAnswer = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
   const { questionId } = req.params;
 
-  const user = await prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
-
-  if (!user) {
-    return res.status(404).json(new ApiError(404, "User not found"));
-  }
-  const question = await prisma.question.findUnique({
-    where: {
-      id: questionId,
-    },
-  });
-  if (!question) {
-    return res.status(404).json(new ApiError(404, "Question not found"));
-  }
   const answer = await prisma.answer.create({
     data: {
       content,
@@ -50,16 +33,6 @@ export const createAnswer = AsyncHandler(async (req: any, res: any) => {
  */
 export const getAnswers = AsyncHandler(async (req: any, res: any) => {
   const { questionId } = req.params;
-
-  const question = await prisma.question.findUnique({
-    where: {
-      id: questionId,
-    },
-  });
-
-  if (!question) {
-    return res.status(404).json(new ApiError(404, "Question not found"));
-  }
 
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -89,14 +62,6 @@ export const updateAnswerById = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
   const { questionId, answerId } = req.params;
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return res.status(404).json(new ApiError(404, "User not found"));
-  const question = await prisma.question.findUnique({
-    where: { id: questionId },
-  });
-  if (!question)
-    return res.status(404).json(new ApiError(404, "Question not found"));
-
   const answer = await prisma.answer.findUnique({ where: { id: answerId } });
   if (!answer)
     return res.status(404).json(new ApiError(404, "Answer not found"));
@@ -125,14 +90,6 @@ export const deleteAnswerById = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
   const { questionId, answerId } = req.params;
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return res.status(404).json(new ApiError(404, "User not found"));
-  const question = await prisma.question.findUnique({
-    where: { id: questionId },
-  });
-  if (!question)
-    return res.status(404).json(new ApiError(404, "Question not found"));
-
   const answer = await prisma.answer.findUnique({ where: { id: answerId } });
   if (!answer)
     return res.status(404).json(new ApiError(404, "Answer not found"));
@@ -159,8 +116,6 @@ export const markAnswerAsAccepted = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
   const { questionId, answerId } = req.params;
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) return res.status(404).json(new ApiError(404, "User not found"));
   const question = await prisma.question.findUnique({
     where: { id: questionId },
   });
