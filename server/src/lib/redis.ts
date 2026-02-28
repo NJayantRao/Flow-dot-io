@@ -1,10 +1,10 @@
-import {createClient} from "redis";
-import {ENV} from "./env.js";
+import { createClient } from "redis";
+import { ENV } from "./env.js";
 
 if (!ENV.REDIS_URL) {
   throw new Error("REDIS_URL is not defined in environment variables");
 }
-const client = createClient({url: ENV.REDIS_URL});
+const client = createClient({ url: ENV.REDIS_URL });
 
 if (!client) {
   throw new Error("Failed to create Redis client");
@@ -19,4 +19,4 @@ client.on("error", (err) => {
 });
 await client.connect();
 
-export {client};
+export { client };

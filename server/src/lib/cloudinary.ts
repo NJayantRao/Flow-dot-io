@@ -1,5 +1,5 @@
-import {v2 as cloudinary} from "cloudinary";
-import {ENV} from "./env.js";
+import { v2 as cloudinary } from "cloudinary";
+import { ENV } from "./env.js";
 
 // Cloudinary config
 cloudinary.config({
@@ -15,7 +15,7 @@ export const uploadFileToCloudinary = async (
 ) => {
   return new Promise((resolve, reject) => {
     const upload = cloudinary.uploader.upload_stream(
-      {folder},
+      { folder },
       (error, result) => {
         if (error) return reject(error);
         resolve(result);

@@ -4,8 +4,8 @@ import {
   getUserProfile,
   updateUserProfile,
 } from "../controllers/user.controller.js";
-import {authMiddleware} from "../middlewares/jwt.js";
-import {usernameUpdateValidation} from "../middlewares/validator.js";
+import { authMiddleware } from "../middlewares/jwt.js";
+import { usernameUpdateValidation } from "../middlewares/validator.js";
 
 const router = express.Router();
 
@@ -18,4 +18,4 @@ router.patch(
 );
 router.delete("/", authMiddleware, deleteUser);
 
-export {router as userRouter};
+export { router as userRouter };

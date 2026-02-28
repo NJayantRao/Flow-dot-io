@@ -12,4 +12,4 @@ const mailGenerator = new Mailgen({
   },
 });
 
-export {mailGenerator};
+export { mailGenerator };

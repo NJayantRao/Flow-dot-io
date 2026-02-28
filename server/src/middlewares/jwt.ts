@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import ApiError from "../utils/api-error.js";
-import {ENV} from "../lib/env.js";
+import { ENV } from "../lib/env.js";
 
 const authMiddleware = async (req: any, res: any, next: any) => {
   try {
@@ -31,13 +31,17 @@ interface IPayload {
 }
 
 const generateAccessToken = (userData: IPayload) => {
-  const token = jwt.sign(userData, ENV.ACCESS_TOKEN_SECRET, {expiresIn: "15m"});
+  const token = jwt.sign(userData, ENV.ACCESS_TOKEN_SECRET, {
+    expiresIn: "15m",
+  });
   return token;
 };
 
 const generateRefreshToken = (userData: IPayload) => {
-  const token = jwt.sign(userData, ENV.REFRESH_TOKEN_SECRET, {expiresIn: "7d"});
+  const token = jwt.sign(userData, ENV.REFRESH_TOKEN_SECRET, {
+    expiresIn: "7d",
+  });
   return token;
 };
 
-export {generateAccessToken, generateRefreshToken, authMiddleware};
+export { generateAccessToken, generateRefreshToken, authMiddleware };

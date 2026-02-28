@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 
-dotenv.config({quiet: true});
+dotenv.config({ quiet: true });
 
 const ENV = {
   NODE_ENV: process.env.NODE_ENV!,
@@ -14,4 +14,4 @@ const ENV = {
   RESEND_API_KEY: process.env.RESEND_API_KEY!,
 };
 
-export {ENV};
+export { ENV };

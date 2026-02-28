@@ -1,4 +1,4 @@
-import {body, validationResult} from "express-validator";
+import { body, validationResult } from "express-validator";
 
 const validateResult = async function (req: any, res: any, next: any) {
   const errors = validationResult(req);
@@ -6,7 +6,7 @@ const validateResult = async function (req: any, res: any, next: any) {
   if (!errors.isEmpty()) {
     return res
       .status(400)
-      .json({errors: errors.array().map((err: any) => err.msg)});
+      .json({ errors: errors.array().map((err: any) => err.msg) });
   }
   next();
 };
@@ -16,7 +16,7 @@ export const userRegistrationValidation = [
     .trim()
     .isString()
     .withMessage("User name must be a string")
-    .isLength({min: 3})
+    .isLength({ min: 3 })
     .withMessage("User name must be at least 3 characters long"),
   body("email")
     .trim()
@@ -26,7 +26,7 @@ export const userRegistrationValidation = [
     .trim()
     .isString()
     .withMessage("Password must be a string")
-    .isLength({min: 8})
+    .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long"),
   validateResult,
 ];
@@ -40,7 +40,7 @@ export const userLoginValidation = [
     .isString()
     .trim()
     .withMessage("Password must be a string")
-    .isLength({min: 8})
+    .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long"),
   validateResult,
 ];
@@ -54,7 +54,7 @@ export const resetPasswordValidation = [
     .trim()
     .isString()
     .withMessage("Password must be a string")
-    .isLength({min: 8})
+    .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters long"),
   validateResult,
 ];
@@ -64,7 +64,7 @@ export const usernameUpdateValidation = [
     .trim()
     .isString()
     .withMessage("User name must be a string")
-    .isLength({min: 3})
+    .isLength({ min: 3 })
     .withMessage("User name must be at least 3 characters long"),
   validateResult,
 ];

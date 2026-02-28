@@ -1,4 +1,4 @@
-import {mailGenerator} from "../lib/mailgen.js";
+import { mailGenerator } from "../lib/mailgen.js";
 
 export const generateRegistrationEmail = (
   username: string,

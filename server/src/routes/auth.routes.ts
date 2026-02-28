@@ -1,5 +1,5 @@
 import express from "express";
-import {authMiddleware} from "../middlewares/jwt.js";
+import { authMiddleware } from "../middlewares/jwt.js";
 import {
   forgotPassword,
   loginUser,
@@ -26,4 +26,4 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPasswordValidation, resetPassword);
 router.get("/logout", authMiddleware, logoutUser);
 
-export {router as authRouter};
+export { router as authRouter };

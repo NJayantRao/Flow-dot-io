@@ -1,19 +1,22 @@
-import {ENV} from "../lib/env.js";
-import {prisma} from "../lib/prisma.js";
-import {client} from "../lib/redis.js";
-import {generateAccessToken, generateRefreshToken} from "../middlewares/jwt.js";
+import { ENV } from "../lib/env.js";
+import { prisma } from "../lib/prisma.js";
+import { client } from "../lib/redis.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../middlewares/jwt.js";
 import ApiError from "../utils/api-error.js";
 import ApiResponse from "../utils/api-response.js";
 import AsyncHandler from "../utils/async-handler.js";
-import {comparePassword, hashPassword} from "../utils/bcrypt.js";
+import { comparePassword, hashPassword } from "../utils/bcrypt.js";
 import crypto from "crypto";
 import {
   sendRegistrationEmail,
   sendResetPasswordMail,
 } from "../utils/userMail.js";
 import jwt from "jsonwebtoken";
-import type {Request, Response, NextFunction} from "express";
-import {options} from "../utils/constants.js";
+import type { Request, Response, NextFunction } from "express";
+import { baseOptions, refreshTokenOptions } from "../utils/constants.js";
 
 /**
  * @route POST /auth/register
@@ -21,14 +24,14 @@ import {options} from "../utils/constants.js";
  * @access public
  */
 export const registerUser = AsyncHandler(async (req: any, res: any) => {
-  const {username, email, password} = req.body;
+  const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
     return res.status(400).json(new ApiError(400, "All fields are required"));
   }
 
   const existingUser = await prisma.user.findUnique({
-    where: {email},
+    where: { email },
   });
 
   if (existingUser) {
@@ -36,7 +39,7 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
   }
 
   const existingUsername = await prisma.user.findUnique({
-    where: {username},
+    where: { username },
   });
   if (existingUsername) {
     return res.status(400).json(new ApiError(400, "Username already exists"));
@@ -64,8 +67,8 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
-  res.cookie("accessToken", accessToken, options);
-  res.cookie("refreshToken", refreshToken, options);
+  res.cookie("accessToken", accessToken, baseOptions);
+  res.cookie("refreshToken", refreshToken, refreshTokenOptions);
 
   await client.set(`refresh-token:${user.id}`, refreshToken, {
     EX: 7 * 24 * 60 * 60,
@@ -73,7 +76,9 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
 
   //generate verify email
   const verificationToken = crypto.randomBytes(32).toString("hex");
-  await client.set(`verify-token:${user.id}`, verificationToken, {EX: 10 * 60});
+  await client.set(`verify-token:${user.id}`, verificationToken, {
+    EX: 10 * 60,
+  });
   const verificationLink = `${req.protocol}://${req.get("host")}/api/v1/auth/verify-email?id=${user.id}&verifyToken=${verificationToken}`;
   await sendRegistrationEmail(user.email, user.username, verificationLink);
 
@@ -91,13 +96,13 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
  * @access public
  */
 export const loginUser = AsyncHandler(async (req: any, res: any) => {
-  const {email, password} = req.body;
+  const { email, password } = req.body;
 
   if (!email || !password) {
     return res.status(400).json(new ApiError(400, "All fields are required"));
   }
 
-  const user = await prisma.user.findUnique({where: {email}});
+  const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
     return res.status(404).json(new ApiError(404, "User not found"));
@@ -116,8 +121,8 @@ export const loginUser = AsyncHandler(async (req: any, res: any) => {
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
-  res.cookie("accessToken", accessToken, options);
-  res.cookie("refreshToken", refreshToken, options);
+  res.cookie("accessToken", accessToken, baseOptions);
+  res.cookie("refreshToken", refreshToken, refreshTokenOptions);
 
   await client.set(`refresh-token:${user.id}`, refreshToken, {
     EX: 7 * 24 * 60 * 60,
@@ -137,7 +142,7 @@ export const loginUser = AsyncHandler(async (req: any, res: any) => {
  * @access public
  */
 export const verifyEmail = AsyncHandler(async (req: any, res: any) => {
-  const {id, verifyToken} = req.query;
+  const { id, verifyToken } = req.query;
 
   // console.log(id,verify);
 
@@ -148,8 +153,8 @@ export const verifyEmail = AsyncHandler(async (req: any, res: any) => {
   }
 
   const user = await prisma.user.update({
-    where: {id},
-    data: {isVerified: true},
+    where: { id },
+    data: { isVerified: true },
   });
 
   await client.del(`verify-token:${user.id}`);
@@ -165,8 +170,8 @@ export const verifyEmail = AsyncHandler(async (req: any, res: any) => {
 export const logoutUser = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
 
-  res.clearCookie("accessToken", options);
-  res.clearCookie("refreshToken", options);
+  res.clearCookie("accessToken", baseOptions);
+  res.clearCookie("refreshToken", refreshTokenOptions);
 
   await client.del(`refresh-token:${userId}`);
 
@@ -181,15 +186,15 @@ export const logoutUser = AsyncHandler(async (req: any, res: any) => {
  * @access public
  */
 export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
-  const {email} = req.body;
-  const user = await prisma.user.findUnique({where: {email}});
+  const { email } = req.body;
+  const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
     return res.status(404).json(new ApiError(404, "User not found"));
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000);
-  await client.set(`verify-otp:${user.email}`, otp, {EX: 10 * 60});
+  await client.set(`verify-otp:${user.email}`, otp, { EX: 10 * 60 });
   await sendResetPasswordMail(user.email, user.username, otp);
 
   return res
@@ -203,7 +208,7 @@ export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
  * @access public
  */
 export const resetPassword = AsyncHandler(async (req: any, res: any) => {
-  const {email, otp, newPassword} = req.body;
+  const { email, otp, newPassword } = req.body;
 
   if (!email || !otp || !newPassword) {
     return res.status(400).json(new ApiError(400, "All fields are required"));
@@ -221,7 +226,7 @@ export const resetPassword = AsyncHandler(async (req: any, res: any) => {
     where: {
       email,
     },
-    data: {password: hashedPassword},
+    data: { password: hashedPassword },
   });
 
   await client.del(`verify-otp:${email}`);
@@ -253,7 +258,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       refreshToken,
       ENV.REFRESH_TOKEN_SECRET
     ) as IPayload;
-    const {id, email} = decoded;
+    const { id, email } = decoded;
 
     const storedRefreshToken = await client.get(`refresh-token:${id}`);
 
@@ -263,11 +268,11 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         .json(new ApiError(401, "Session expired. Please login again."));
     }
 
-    const accessToken = jwt.sign({id, email}, ENV.ACCESS_TOKEN_SECRET, {
+    const accessToken = jwt.sign({ id, email }, ENV.ACCESS_TOKEN_SECRET, {
       expiresIn: "15m",
     });
 
-    res.cookie("accessToken", accessToken, options);
+    res.cookie("accessToken", accessToken, baseOptions);
 
     return res.status(200).json(
       new ApiResponse(200, "Access token refreshed successfully", {
@@ -275,7 +280,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       })
     );
   } catch (error: any) {
-    console.log(error);
+    console.error(error);
 
     if (error.name === "TokenExpiredError") {
       return res
