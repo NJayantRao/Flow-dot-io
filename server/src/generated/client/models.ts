@@ -7,10 +7,10 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from "./models/User";
-export type * from "./models/Question";
-export type * from "./models/Answer";
-export type * from "./models/Comment";
-export type * from "./models/Vote";
-export type * from "./models/ReputationLedger";
-export type * from "./commonInputTypes";
+export type * from "./models/User.js";
+export type * from "./models/Question.js";
+export type * from "./models/Answer.js";
+export type * from "./models/Comment.js";
+export type * from "./models/Vote.js";
+export type * from "./models/ReputationLedger.js";
+export type * from "./commonInputTypes.js";
