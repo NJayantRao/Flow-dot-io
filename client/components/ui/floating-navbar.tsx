@@ -64,7 +64,7 @@ export const FloatingNav = ({
         <button
           className="relative rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-neutral-800 hover:shadow-lg hover:shadow-neutral-900/20 dark:bg-white dark:text-black dark:hover:bg-neutral-100 dark:hover:shadow-white/20 cursor-pointer"
           onClick={() => {
-            router.push("/login");
+            router.push("/signin");
           }}
         >
           <span>Login</span>
