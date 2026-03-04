@@ -86,6 +86,7 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
     new ApiResponse(201, "User created successfully...", {
       accessToken,
       refreshToken,
+      avatarUrl,
     })
   );
 });
