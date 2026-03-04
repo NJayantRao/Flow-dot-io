@@ -29,8 +29,8 @@ const MarkdownEditor = ({
         preview="live"
         textareaProps={{ placeholder }}
         style={{
-          backgroundColor: "#1a1a1a",
-          border: "1px solid #2a2a2a",
+          backgroundColor: "#161b22",
+          border: "1px solid #30363d",
           borderRadius: "12px",
           overflow: "hidden",
         }}
