@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useRouter } from "next/navigation";
 
 // Inline SVG icons to avoid extra dependencies
 
@@ -41,6 +42,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,9 +64,6 @@ export default function LoginPage() {
       />
 
       <div className="relative w-full max-w-[420px] animate-in fade-in slide-in-from-bottom-4 duration-500">
-        {/* Gradient Border */}
-        <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-purple-500/30 blur-sm opacity-60"></div>
-
         {/* Card */}
         <div className="relative space-y-6 rounded-2xl border border-[#2a2a2a] bg-[#111111] p-6 backdrop-blur-md">
           {/* Logo */}
@@ -122,7 +121,10 @@ export default function LoginPage() {
                 </Label>
                 <button
                   type="button"
-                  className="text-[#38b2f8] text-sm hover:text-[#60c8ff] transition-colors"
+                  className="text-[#38b2f8] text-sm hover:text-[#60c8ff] transition-colors cursor-pointer"
+                  onClick={() => {
+                    router.push("/forgot-password");
+                  }}
                 >
                   Forgot?
                 </button>
@@ -163,7 +165,7 @@ export default function LoginPage() {
               bg-white hover:bg-[#f3f4f6]
               disabled:opacity-60
               transition-all duration-150
-              mt-2
+              mt-2 cursor-pointer
             "
             >
               {isLoading ? (

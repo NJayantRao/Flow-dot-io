@@ -60,9 +60,6 @@ export default function LoginPage() {
       />
 
       <div className="relative w-full max-w-[420px] animate-in fade-in slide-in-from-bottom-4 duration-500">
-        {/* Gradient Border */}
-        <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-purple-500/30 blur-sm opacity-60"></div>
-
         {/* Card */}
         <div className="relative space-y-6 rounded-2xl border border-[#2a2a2a] bg-[#111111] p-6 backdrop-blur-md">
           {/* Logo */}
@@ -118,7 +115,7 @@ export default function LoginPage() {
               bg-white hover:bg-[#f3f4f6]
               disabled:opacity-60
               transition-all duration-150
-              mt-2
+              mt-2 cursor-pointer
             "
             >
               {isLoading ? (

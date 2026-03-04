@@ -49,9 +49,6 @@ export default function SignupFormDemo() {
 
       {/* Card Wrapper */}
       <div className="relative w-full max-w-[420px]">
-        {/* Gradient border glow */}
-        <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-cyan-500/30 via-blue-500/20 to-purple-500/30 blur-sm opacity-60" />
-
         {/* Card */}
         <div className="relative rounded-2xl border border-[#2a2a2a] bg-[#111111] p-6 shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
           <h2 className="text-2xl font-bold text-white text-center">
@@ -100,7 +97,7 @@ export default function SignupFormDemo() {
               </div>
             </LabelInputContainer>
             <button
-              className="group/btn relative block h-11 w-full rounded-xl bg-white font-semibold text-black hover:bg-neutral-200 transition"
+              className="group/btn relative block h-11 w-full rounded-xl bg-white font-semibold text-black hover:bg-neutral-200 transition cursor-pointer"
               type="submit"
             >
               Sign up →
