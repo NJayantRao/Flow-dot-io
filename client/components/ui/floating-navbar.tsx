@@ -67,7 +67,7 @@ export const FloatingNav = ({
             router.push("/signin");
           }}
         >
-          <span>Login</span>
+          <span>Signin</span>
         </button>
       </div>
     </motion.div>

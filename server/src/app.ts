@@ -9,16 +9,20 @@ import { commentRouter } from "./routes/questionComment.routes.js";
 import { answerCommentsRouter } from "./routes/answerComments.routes.js";
 import { voteRouter } from "./routes/vote.routes.js";
 import { miscRouter } from "./routes/miscellaneous.routes.js";
+import { ENV } from "./lib/env.js";
+
 const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://flow-dot-io.vercel.app/"],
+    origin: [ENV.LOCAL_URL, ENV.FRONTEND_URL],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
+app.options(/.*/, cors());
 
 app.use(express.json());
 app.use(cookieParser());
