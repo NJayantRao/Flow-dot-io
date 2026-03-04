@@ -22,6 +22,7 @@ export const getUserProfile = AsyncHandler(async (req: any, res: any) => {
       role: true,
       isVerified: true,
       reputation: true,
+      createdAt: true,
     },
   });
 

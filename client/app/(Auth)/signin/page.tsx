@@ -25,11 +25,16 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const response = await axios.post(`${ENV.BACKEND_URL}/auth/login`, {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${ENV.BACKEND_URL}/auth/login`,
+        {
+          email,
+          password,
+        },
+        { withCredentials: true }
+      );
       console.log(response);
+      router.push("/dashboard");
     } catch (error) {
       console.log(error);
     } finally {

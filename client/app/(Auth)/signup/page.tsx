@@ -7,6 +7,7 @@ import { Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 import { ENV } from "@/lib/env";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 const EyeIcon = ({ open }: { open: boolean }) => (open ? <Eye /> : <EyeOff />);
 export default function SignupFormDemo() {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,17 +15,23 @@ export default function SignupFormDemo() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const response = await axios.post(`${ENV.BACKEND_URL}/auth/register`, {
-        username,
-        email,
-        password,
-      });
+      const response = await axios.post(
+        `${ENV.BACKEND_URL}/auth/register`,
+        {
+          username,
+          email,
+          password,
+        },
+        { withCredentials: true }
+      );
 
       console.log(response);
+      router.push("/dashboard");
     } catch (error) {
       console.log(error);
     } finally {

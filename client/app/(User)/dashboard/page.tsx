@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import {
   IconLayoutDashboard,
@@ -26,6 +26,9 @@ import {
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import axios from "axios";
+import { ENV } from "@/lib/env";
+import Image from "next/image";
 
 // ─── Palette tokens ───────────────────────────────────────────────────────────
 // bg:        #0d1117 (GitHub-dark slate — dark but not black)
@@ -216,6 +219,12 @@ const DashboardPanel = () => {
     confirm: false,
   });
   const [pwError, setPwError] = useState("");
+  const [username, setUsername] = useState("");
+  const [avatar, setAvatar] = useState("");
+  const [email, setEmail] = useState("");
+  const [isEmailVerified, setIsEmailVerified] = useState("");
+  const [reputation, setReputation] = useState(0);
+  const [joined, setJoined] = useState("");
   const [pwSuccess, setPwSuccess] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
@@ -239,12 +248,31 @@ const DashboardPanel = () => {
     setPwForm({ current: "", next: "", confirm: "" });
   };
 
-  const initials = user.name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const res = await axios.get(`${ENV.BACKEND_URL}/user/profile`, {
+          withCredentials: true,
+        });
+        const response = res.data;
+        setUsername(response.data.username);
+        setAvatar(response.data.avatarUrl);
+        setEmail(response.data.email);
+        setIsEmailVerified(response.data.isVerified);
+        setReputation(response.data.reputation);
+        setJoined(response.data.createdAt);
+        console.log(response);
+      } catch (error: any) {
+        if (error.response?.data?.message === "Token expired") {
+          await axios.get(`${ENV.BACKEND_URL}/auth/refresh-token`, {
+            withCredentials: true,
+          });
+        }
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#0d1117]">
@@ -252,17 +280,22 @@ const DashboardPanel = () => {
         {/* ── Header ── */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-4">
-            <div className="h-11 w-11 rounded-full bg-[#7c6af7]/20 border border-[#7c6af7]/30 flex items-center justify-center text-[14px] font-bold text-[#a78bfa] shrink-0">
-              {initials}
+            <div className="h-15 w-15 rounded-full border border-[#7c6af7]/30 flex items-center justify-center text-[14px] font-bold  shrink-0">
+              {avatar && (
+                <img
+                  src={avatar}
+                  alt="avatar"
+                  className="w-10 h-10 rounded-full"
+                />
+              )}
             </div>
             <div>
               <h1 className="text-[16px] font-semibold text-[#e6edf3] leading-none">
-                {user.name}
+                {username}
               </h1>
               <p className="text-[12px] text-[#8b949e] mt-1.5">
-                @{user.username} ·{" "}
-                <span className="text-[#7c6af7]">{user.reputation}</span>{" "}
-                reputation
+                @{username} ·{" "}
+                <span className="text-[#7c6af7]">{reputation}</span> reputation
               </p>
             </div>
           </div>
@@ -375,10 +408,10 @@ const DashboardPanel = () => {
                     </span>
                   </div>
                   <p className="text-[12px] text-[#8b949e] mt-0.5 ml-5">
-                    {user.email}
+                    {email}
                   </p>
                 </div>
-                {user.emailVerified ? (
+                {isEmailVerified ? (
                   <div className="flex items-center gap-1.5 bg-[#3fb950]/10 border border-[#3fb950]/25 text-[#3fb950] text-[11px] font-medium px-2.5 py-1 rounded-full shrink-0">
                     <IconCheck size={11} /> Verified
                   </div>
@@ -389,7 +422,7 @@ const DashboardPanel = () => {
                 )}
               </div>
 
-              {!user.emailVerified && (
+              {!isEmailVerified && (
                 <>
                   <p className="text-[12px] text-[#8b949e] leading-relaxed">
                     Your email hasn&apos;t been verified yet. Verify it to
@@ -411,7 +444,7 @@ const DashboardPanel = () => {
                 </>
               )}
 
-              {user.emailVerified && (
+              {isEmailVerified && (
                 <p className="text-[12px] text-[#8b949e]">
                   Your email is verified. You have full access to all platform
                   features.
