@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { em, tr } from "motion/react-client";
+import axios from "axios";
+import { ENV } from "@/lib/env";
+import { useRouter } from "next/navigation";
 
 // Inline SVG icons to avoid extra dependencies
 
@@ -39,13 +43,23 @@ const EyeIcon = ({ open }: { open: boolean }) =>
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const res = await axios.post(`${ENV.BACKEND_URL}/auth/forgot-password`, {
+        email,
+      });
+      console.log(res.data);
+      router.push("/reset-password");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+      setEmail("");
+    }
   };
 
   return (
@@ -94,7 +108,15 @@ export default function LoginPage() {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
+                onInvalid={(e) => {
+                  e.currentTarget.setCustomValidity("Enter Valid E-Mail ID");
+                }}
+                onInput={(e) => {
+                  e.currentTarget.setCustomValidity("");
+                }}
                 required
                 className="
                 bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-[#4b5563]

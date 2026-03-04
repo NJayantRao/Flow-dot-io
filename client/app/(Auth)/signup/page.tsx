@@ -3,37 +3,36 @@ import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-const EyeIcon = ({ open }: { open: boolean }) =>
-  open ? (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ) : (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  );
+import { Eye, EyeOff } from "lucide-react";
+import axios from "axios";
+import { ENV } from "@/lib/env";
+import { Button } from "@/components/ui/button";
+const EyeIcon = ({ open }: { open: boolean }) => (open ? <Eye /> : <EyeOff />);
 export default function SignupFormDemo() {
   const [showPassword, setShowPassword] = useState(false);
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    try {
+      setIsLoading(true);
+      const response = await axios.post(`${ENV.BACKEND_URL}/auth/register`, {
+        username,
+        email,
+        password,
+      });
+
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -64,7 +63,12 @@ export default function SignupFormDemo() {
               <Label className="text-neutral-300">Username</Label>
               <Input
                 placeholder="username_18"
+                required
+                value={username}
                 className="bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-neutral-500"
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                }}
               />
             </LabelInputContainer>
 
@@ -72,8 +76,19 @@ export default function SignupFormDemo() {
               <Label className="text-neutral-300">Email</Label>
               <Input
                 type="email"
+                required
+                value={email}
                 placeholder="you@example.com"
                 className="bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-neutral-500"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
+                onInvalid={(e) => {
+                  e.currentTarget.setCustomValidity("Enter Valid E-Mail ID");
+                }}
+                onInput={(e) => {
+                  e.currentTarget.setCustomValidity("");
+                }}
               />
             </LabelInputContainer>
 
@@ -84,32 +99,71 @@ export default function SignupFormDemo() {
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
+                  required
+                  minLength={8}
+                  maxLength={20}
+                  value={password}
                   className="bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-neutral-500 pr-10"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#9ca3af] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b7280] hover:text-[#9ca3af] transition-colors cursor-pointer"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   <EyeIcon open={showPassword} />
                 </button>
               </div>
             </LabelInputContainer>
-            <button
-              className="group/btn relative block h-11 w-full rounded-xl bg-white font-semibold text-black hover:bg-neutral-200 transition cursor-pointer"
+            <Button
               type="submit"
+              disabled={isLoading}
+              className="
+              w-full h-11 rounded-xl font-semibold text-[#0a0a0a]
+              bg-white hover:bg-[#f3f4f6]
+              disabled:opacity-60
+              transition-all duration-150
+              mt-2 cursor-pointer
+            "
             >
-              Sign up →
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <svg
+                    className="animate-spin h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  Registering…
+                </span>
+              ) : (
+                "Sign Up"
+              )}
               <BottomGradient />
-            </button>
+            </Button>
 
             <div className="my-6 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-700 to-transparent" />
 
             <p className="text-center text-sm text-neutral-400">
               Already have an account?{" "}
               <a
-                href="/login"
+                href="/signin"
                 className="text-white font-semibold hover:text-cyan-400"
               >
                 Sign in

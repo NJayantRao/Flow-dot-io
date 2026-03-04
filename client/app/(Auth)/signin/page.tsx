@@ -6,36 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
+import axios from "axios";
+import { ENV } from "@/lib/env";
 
 // Inline SVG icons to avoid extra dependencies
 
-const EyeIcon = ({ open }: { open: boolean }) =>
-  open ? (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ) : (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  );
+const EyeIcon = ({ open }: { open: boolean }) => (open ? <Eye /> : <EyeOff />);
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -46,10 +23,20 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const response = await axios.post(`${ENV.BACKEND_URL}/auth/login`, {
+        email,
+        password,
+      });
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setEmail("");
+      setPassword("");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -98,7 +85,15 @@ export default function LoginPage() {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
+                onInvalid={(e) => {
+                  e.currentTarget.setCustomValidity("Enter Valid E-Mail ID");
+                }}
+                onInput={(e) => {
+                  e.currentTarget.setCustomValidity("");
+                }}
                 required
                 className="
                 bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-[#4b5563]
@@ -137,6 +132,8 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={8}
+                  maxLength={20}
                   className="
                   bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-[#4b5563]
                   h-11 rounded-xl pr-10

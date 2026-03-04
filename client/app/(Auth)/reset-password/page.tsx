@@ -4,7 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+import axios from "axios";
+import { ENV } from "@/lib/env";
+import { useRouter } from "next/navigation";
 
 // Inline SVG icons to avoid extra dependencies
 
@@ -39,15 +41,30 @@ const EyeIcon = ({ open }: { open: boolean }) =>
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1500));
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const res = await axios.post(`${ENV.BACKEND_URL}/auth/reset-password`, {
+        email,
+        otp,
+        newPassword: password,
+      });
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setEmail("");
+      setOtp("");
+      setPassword("");
+      setIsLoading(false);
+      router.push("/signin");
+    }
   };
 
   return (
@@ -120,8 +137,10 @@ export default function LoginPage() {
                   id="otp"
                   type="text"
                   placeholder="123456"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  minLength={6}
+                  maxLength={6}
                   required
                   className="
                   bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-[#4b5563]
@@ -151,6 +170,8 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  minLength={8}
+                  maxLength={20}
                   required
                   className="
                   bg-[#1a1a1a] border-[#2a2a2a] text-white placeholder:text-[#4b5563]
