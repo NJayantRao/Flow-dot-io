@@ -4,20 +4,45 @@ import React, { useState } from "react";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import Image from "next/image";
 import { FileUpload } from "@/components/ui/file-upload";
-import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
+import axios from "axios";
+import { ENV } from "@/lib/env";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("# Describe your problem\n\n");
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const formData = new FormData();
   const handleImage = (files: File[]) => {
     const file = files[0];
     if (!file) return;
 
+    if (image) {
+      formData.append("attachment", image);
+    }
     setImage(file);
     setPreview(URL.createObjectURL(file));
+  };
+
+  formData.append("title", title);
+  formData.append("content", description);
+  const handleSubmit = async () => {
+    try {
+      setIsLoading(true);
+      const res = await axios.post(`${ENV.BACKEND_URL}/questions`, formData, {
+        withCredentials: true,
+      });
+      console.log(res.data);
+      router.push("/dashboard");
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -41,7 +66,7 @@ const Page = () => {
             {/* Preview */}
             <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4 flex items-center justify-center min-h-[220px]">
               {preview ? (
-                <Image
+                <img
                   src={preview}
                   alt="preview"
                   className="max-h-[200px] rounded-lg object-contain"
@@ -58,7 +83,6 @@ const Page = () => {
               <FileUpload onChange={handleImage} />
             </div>
           </div>
-
           {/* Title */}
           <div className="flex flex-col gap-2">
             <label className="text-[#e6edf3] text-sm font-medium">Title</label>
@@ -92,16 +116,22 @@ const Page = () => {
 
           {/* Post Button */}
           <div className="flex justify-end">
-            <button className="bg-orange-500 hover:bg-orange-400 text-white text-[14px] font-semibold px-6 py-3 rounded-lg transition-colors">
-              Post Question
-            </button>
-            {/* <HoverBorderGradient
-              containerClassName="rounded-full"
-              as="button"
-              className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 cursor-pointer"
-            >
-              <span>Post Question</span>
-            </HoverBorderGradient> */}
+            {isLoading ? (
+              <button
+                className="bg-orange-500 text-white text-[14px] font-semibold px-6 py-3 rounded-lg transition-colors"
+                disabled={isLoading}
+                onClick={handleSubmit}
+              >
+                Posting...
+              </button>
+            ) : (
+              <button
+                className="bg-orange-500 text-white text-[14px] font-semibold px-6 py-3 rounded-lg transition-colors cursor-pointer"
+                onClick={handleSubmit}
+              >
+                Post Question
+              </button>
+            )}
           </div>
         </div>
       </div>

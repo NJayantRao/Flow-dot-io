@@ -35,7 +35,7 @@ const PostAnswerModal = ({ open, onClose }: PostAnswerModalProps) => {
           <MarkdownEditor
             value={answer}
             onChange={setAnswer}
-            height={350}
+            height={320}
             placeholder="Write your answer using markdown..."
           />
         </div>
