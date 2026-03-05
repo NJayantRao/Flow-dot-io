@@ -263,10 +263,28 @@ const DashboardPanel = () => {
         setJoined(response.data.createdAt);
         console.log(response);
       } catch (error: any) {
-        if (error.response?.data?.message === "Token expired") {
-          await axios.get(`${ENV.BACKEND_URL}/auth/refresh-token`, {
-            withCredentials: true,
-          });
+        console.log(error.response?.data?.message);
+
+        if (error.response?.data?.message === "Unauthorized request") {
+          try {
+            await axios.get(`${ENV.BACKEND_URL}/auth/refresh-token`, {
+              withCredentials: true,
+            });
+
+            const res = await axios.get(`${ENV.BACKEND_URL}/user/profile`, {
+              withCredentials: true,
+            });
+            const response = res.data;
+            setUsername(response.data.username);
+            setAvatar(response.data.avatarUrl);
+            setEmail(response.data.email);
+            setIsEmailVerified(response.data.isVerified);
+            setReputation(response.data.reputation);
+            setJoined(response.data.createdAt);
+            console.log(response);
+          } catch (error) {
+            console.log(error);
+          }
         }
       }
     };
