@@ -16,23 +16,22 @@ const Page = () => {
   const [preview, setPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const formData = new FormData();
   const handleImage = (files: File[]) => {
     const file = files[0];
     if (!file) return;
 
-    if (image) {
-      formData.append("attachment", image);
-    }
     setImage(file);
     setPreview(URL.createObjectURL(file));
   };
-
-  formData.append("title", title);
-  formData.append("content", description);
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("content", description);
+      if (image) {
+        formData.append("attachment", image);
+      }
       const res = await axios.post(`${ENV.BACKEND_URL}/questions`, formData, {
         withCredentials: true,
       });
