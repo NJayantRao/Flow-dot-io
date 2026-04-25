@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "generate": "npx prisma generate"
+    "generate": "npx prisma generate",
+    "swagger": "tsx src/lib/swagger.ts"
   },
   "author": "Jayant N",
   "license": "ISC",
@@ -24,13 +25,13 @@
     "@types/multer": "^2.0.0",
     "@types/node": "^25.3.2",
     "@types/pg": "^8.16.0",
+    "swagger-autogen": "^2.23.7",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.4.1",
     "@prisma/client": "^7.4.1",
-    "prisma": "^7.4.1",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
@@ -42,7 +43,9 @@
     "mailgen": "^2.0.32",
     "multer": "^2.0.2",
     "pg": "^8.18.0",
+    "prisma": "^7.4.1",
     "redis": "^5.11.0",
-    "resend": "^6.9.2"
+    "resend": "^6.9.2",
+    "swagger-ui-express": "^5.0.1"
   }
 }
