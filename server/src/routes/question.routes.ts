@@ -11,10 +11,10 @@ import { upload } from "../lib/multer.js";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, upload.single("attachment"), createQuestion);
-router.get("/", getQuestions);
+router.post("", authMiddleware, upload.single("attachment"), createQuestion);
+router.get("", getQuestions);
 router.get("/:questionId", getQuestionById);
-router.put(
+router.patch(
   "/:questionId",
   authMiddleware,
   upload.single("attachment"),
