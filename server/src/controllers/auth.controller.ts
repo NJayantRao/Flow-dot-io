@@ -24,7 +24,7 @@ import { accessTokenOptions, refreshTokenOptions } from "../utils/constants.js";
  * @desc Register user controller
  * @access public
  */
-export const registerUser = AsyncHandler(async (req: any, res: any) => {
+const register = AsyncHandler(async (req: any, res: any) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
@@ -106,7 +106,7 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
  * @desc Login user controller
  * @access public
  */
-export const loginUser = AsyncHandler(async (req: any, res: any) => {
+const login = AsyncHandler(async (req: any, res: any) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -118,9 +118,17 @@ export const loginUser = AsyncHandler(async (req: any, res: any) => {
   if (!user) {
     return res.status(404).json(new ApiError(404, "User not found"));
   }
+
   const isMatched = await comparePassword(password, user.password);
   if (!isMatched) {
     return res.status(401).json(new ApiError(401, "Invalid credentials"));
+  }
+
+  //check if email is verified
+  if (!user.isVerified) {
+    return res
+      .status(401)
+      .json(new ApiError(401, "Please verify your email to login"));
   }
 
   //access & refresh token
@@ -149,11 +157,39 @@ export const loginUser = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
+ * @route POST /auth/logout
+ * @desc logout user controller
+ * @access private
+ */
+const logout = AsyncHandler(async (req: any, res: any) => {
+  const { id } = req.user;
+  const refreshToken = req?.cookies?.refreshToken;
+  const storedRefreshToken = await client.get(`refresh-token:${id}`);
+  if (!refreshToken || refreshToken !== storedRefreshToken) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+
+  //black list refresh token
+  await client.set(`blackList-token:${refreshToken}`, "BLOCKED", {
+    EX: 7 * 24 * 60 * 60,
+  });
+
+  await client.del(`refresh-token:${id}`);
+
+  res.clearCookie("accessToken", accessTokenOptions);
+  res.clearCookie("refreshToken", refreshTokenOptions);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "User logged out successfully"));
+});
+
+/**
  * @route GET /auth/verify-email
  * @desc Verify email controller
  * @access public
  */
-export const verifyEmail = AsyncHandler(async (req: any, res: any) => {
+const verifyEmail = AsyncHandler(async (req: any, res: any) => {
   const { id, verifyToken } = req.query;
 
   const storedVerifyToken = await client.get(`verify-token:${id}`);
@@ -173,29 +209,11 @@ export const verifyEmail = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * @route POST /auth/logout
- * @desc logout user controller
- * @access private
- */
-export const logoutUser = AsyncHandler(async (req: any, res: any) => {
-  const userId = req.user.id;
-
-  res.clearCookie("accessToken", accessTokenOptions);
-  res.clearCookie("refreshToken", refreshTokenOptions);
-
-  await client.del(`refresh-token:${userId}`);
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, "User logged out successfully"));
-});
-
-/**
  * @route POST /auth/forgot-password
  * @desc forgot password controller
  * @access public
  */
-export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
+const forgotPassword = AsyncHandler(async (req: any, res: any) => {
   const { email } = req.body;
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -203,7 +221,7 @@ export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
     return res.status(404).json(new ApiError(404, "User not found"));
   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000);
+  const otp = crypto.randomInt(100000, 999999);
   await client.set(`verify-otp:${user.email}`, otp, { EX: 10 * 60 });
   await sendResetPasswordMail(user.email, user.username, otp);
 
@@ -217,7 +235,7 @@ export const forgotPassword = AsyncHandler(async (req: any, res: any) => {
  * @desc reset password controller
  * @access public
  */
-export const resetPassword = AsyncHandler(async (req: any, res: any) => {
+const resetPassword = AsyncHandler(async (req: any, res: any) => {
   const { email, otp, newPassword } = req.body;
 
   if (!email || !otp || !newPassword) {
@@ -251,7 +269,7 @@ export const resetPassword = AsyncHandler(async (req: any, res: any) => {
  * @desc Refresh access token controller
  * @access public
  */
-export const refreshAccessToken = async (req: Request, res: Response) => {
+const refreshAccessToken = async (req: Request, res: Response) => {
   try {
     const authorization = req?.headers?.authorization;
     const refreshToken =
@@ -260,7 +278,10 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     if (!refreshToken) {
       return res.status(401).json(new ApiError(401, "Unauthorized request"));
     }
-
+    const blacklisted = await client.get(`blackList-token:${refreshToken}`);
+    if (blacklisted === "BLOCKED") {
+      throw new ApiError(401, "Unauthorized request");
+    }
     const decoded = jwt.verify(
       refreshToken,
       ENV.REFRESH_TOKEN_SECRET
@@ -296,4 +317,14 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       .status(401)
       .json(new ApiError(401, "Session expired, Please login again"));
   }
+};
+
+export {
+  register,
+  login,
+  logout,
+  verifyEmail,
+  forgotPassword,
+  resetPassword,
+  refreshAccessToken,
 };

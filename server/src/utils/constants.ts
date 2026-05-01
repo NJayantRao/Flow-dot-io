@@ -2,13 +2,14 @@ import { ENV } from "../lib/env.js";
 
 const baseOptions = {
   httpOnly: true,
-  sameSite: "none" as const,
+  sameSite:
+    ENV.NODE_ENV === "PRODUCTION" ? ("none" as const) : ("lax" as const),
   secure: ENV.NODE_ENV === "PRODUCTION",
 };
 
 const accessTokenOptions = {
   ...baseOptions,
-  maxAge: 7 * 24 * 60 * 60 * 1000,
+  maxAge: 15 * 60 * 1000,
 };
 
 const refreshTokenOptions = {
