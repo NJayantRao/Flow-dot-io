@@ -4,12 +4,17 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
+    "studio": "npx prisma studio",
     "generate": "npx prisma generate",
     "swagger": "tsx src/lib/swagger.ts"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --write"
+    ]
   },
   "author": "Jayant N",
   "license": "ISC",

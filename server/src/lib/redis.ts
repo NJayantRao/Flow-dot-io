@@ -11,7 +11,7 @@ if (!client) {
 }
 
 client.on("connect", () => {
-  console.log("⚡⚡ Redis connected successfully...");
+  console.log("Redis connected successfully...");
 });
 
 client.on("error", (err) => {

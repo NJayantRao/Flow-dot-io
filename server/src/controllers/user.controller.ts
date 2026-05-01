@@ -3,7 +3,7 @@ import { client } from "../lib/redis.js";
 import ApiError from "../utils/api-error.js";
 import ApiResponse from "../utils/api-response.js";
 import AsyncHandler from "../utils/async-handler.js";
-import { baseOptions, refreshTokenOptions } from "../utils/constants.js";
+import { accessTokenOptions, refreshTokenOptions } from "../utils/constants.js";
 
 /**
  * @route GET /user/profile
@@ -81,7 +81,7 @@ export const deleteUser = AsyncHandler(async (req: any, res: any) => {
 
   await prisma.user.delete({ where: { id: userId } });
   await client.del(`refresh-token:${userId}`);
-  res.clearCookie("accessToken", baseOptions);
+  res.clearCookie("accessToken", accessTokenOptions);
   res.clearCookie("refreshToken", refreshTokenOptions);
 
   return res

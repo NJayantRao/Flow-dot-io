@@ -17,7 +17,7 @@ export const sendRegistrationEmail = async (
       html: html,
     });
 
-    // console.log(info);
+    console.log(info);
   } catch (error) {
     console.error("Error sending registration email:", error);
   }
@@ -37,5 +37,5 @@ export const sendResetPasswordMail = async (
     html: html,
   });
 
-  // console.log(info);
+  console.log(info);
 };
