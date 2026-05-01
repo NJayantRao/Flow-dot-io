@@ -6,38 +6,47 @@ export const generateResetPasswordEmail = (username: string, otp: number) => {
       name: username,
 
       intro: [
+        "Reset your password 🔐",
         "We received a request to reset your Flow account password.",
-        "Use the One-Time Password (OTP) below to continue.",
+        "Use the verification code below to continue:",
 
-        // OTP BOX
+        // 🔥 OTP BOX (refined)
         `
         <div style="
-          background-color:#F0F4FB;
-          padding:16px;
-          border-radius:8px;
+          background: linear-gradient(135deg, #EEF2FF, #F5F3FF);
+          padding:20px;
+          border-radius:12px;
           text-align:center;
-          margin:20px 0;
+          margin:24px 0;
+          border:1px solid #E0E7FF;
         ">
-          <span style="
-            font-size:22px;
+          <div style="
+            font-size:12px;
+            color:#6B7280;
+            margin-bottom:8px;
+            letter-spacing:0.5px;
+          ">
+            YOUR VERIFICATION CODE
+          </div>
+          <div style="
+            font-size:26px;
             font-weight:700;
-            letter-spacing:4px;
-            color:#2563EB;
+            letter-spacing:6px;
+            color:#7C3AED;
           ">
             ${otp}
-          </span>
+          </div>
         </div>
         `,
 
-        "This OTP is valid for 10 minutes.",
+        "This code will expire in 10 minutes.",
       ],
 
       outro: [
-        "If you did not request a password reset, you can safely ignore this email.",
-        "For security reasons, never share this OTP with anyone.",
+        "If you didn’t request a password reset, you can ignore this email.",
+        "For security, never share this code with anyone.",
         "",
-        "Stay secure,",
-        "Team Flow",
+        "— Team Flow",
       ],
     },
   };
@@ -47,14 +56,16 @@ export const generateResetPasswordEmail = (username: string, otp: number) => {
     text: `
 Hello ${username},
 
+Reset your password
+
 We received a request to reset your Flow password.
 
-Your OTP: ${otp}
-Valid for 10 minutes.
+Your verification code: ${otp}
+This code is valid for 10 minutes.
 
-If you did not request this, ignore this email.
+If you didn’t request this, you can ignore this email.
 
-Team Flow
+— Team Flow
     `,
   };
 };

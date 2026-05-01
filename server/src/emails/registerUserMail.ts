@@ -10,25 +10,31 @@ export const generateRegistrationEmail = (
 
       intro: [
         "Welcome to Flow 👋",
-        "You’re now part of a developer community where questions get answered and knowledge moves forward.",
-        "Let’s activate your account and get you started.",
+        "A place where developers learn faster, share smarter, and grow together.",
       ],
 
       action: {
-        instructions: "Click below to activate your account:",
+        instructions:
+          "You're one step away from getting started. Activate your account below:",
         button: {
-          color: "#F48024",
-          text: "Activate My Account",
+          color: "#2563EB",
+          text: "Activate Account",
           link: verifyLink,
         },
       },
 
       outro: [
-        "Once activated, you can:",
-        "• Ask technical questions\n• Share answers\n• Earn reputation\n• Build your developer profile",
+        "Here’s what you can do once you're in:",
         "",
-        "If you didn’t create a Flow account, you can safely ignore this email.",
+        "✨ Ask questions and get clear answers",
+        "🚀 Share your knowledge with the community",
+        "🏆 Build your reputation as a developer",
+        "📌 Create your public dev profile",
+        "",
+        "If you didn’t sign up for Flow, you can safely ignore this email.",
       ],
+
+      signature: "— Team Flow.io",
     },
   };
 

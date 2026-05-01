@@ -4,11 +4,8 @@ import Mailgen from "mailgen";
 const mailGenerator = new Mailgen({
   theme: "default",
   product: {
-    // Appears in header & footer of e-mails
-    name: "Mailgen",
-    link: "https://mailgen.js/",
-    // Optional product logo
-    // logo: 'https://mailgen.js/img/logo.png'
+    name: "Flow.io",
+    link: "https://yourdomain.com",
   },
 });
 

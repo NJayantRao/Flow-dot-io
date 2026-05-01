@@ -4,6 +4,7 @@ import { client } from "../lib/redis.js";
 import {
   generateAccessToken,
   generateRefreshToken,
+  type IPayload,
 } from "../middlewares/jwt.js";
 import ApiError from "../utils/api-error.js";
 import ApiResponse from "../utils/api-response.js";
@@ -16,7 +17,7 @@ import {
 } from "../utils/userMail.js";
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
-import { baseOptions, refreshTokenOptions } from "../utils/constants.js";
+import { accessTokenOptions, refreshTokenOptions } from "../utils/constants.js";
 
 /**
  * @route POST /auth/register
@@ -56,18 +57,27 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
       password: hashedPassword,
       avatarUrl,
     },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+      avatarUrl: true,
+      createdAt: true,
+    },
   });
 
   //access & refresh token
   const payload = {
     id: user.id,
     email: user.email,
+    role: user.role,
   };
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
-  res.cookie("accessToken", accessToken, baseOptions);
+  res.cookie("accessToken", accessToken, accessTokenOptions);
   res.cookie("refreshToken", refreshToken, refreshTokenOptions);
 
   await client.set(`refresh-token:${user.id}`, refreshToken, {
@@ -80,13 +90,13 @@ export const registerUser = AsyncHandler(async (req: any, res: any) => {
     EX: 10 * 60,
   });
   const verificationLink = `${req.protocol}://${req.get("host")}/api/v1/auth/verify-email?id=${user.id}&verifyToken=${verificationToken}`;
-  await sendRegistrationEmail(user.email, user.username, verificationLink);
+  sendRegistrationEmail(user.email, user.username, verificationLink);
 
   return res.status(201).json(
     new ApiResponse(201, "User created successfully...", {
       accessToken,
       refreshToken,
-      avatarUrl,
+      user,
     })
   );
 });
@@ -117,12 +127,13 @@ export const loginUser = AsyncHandler(async (req: any, res: any) => {
   const payload = {
     id: user.id,
     email: user.email,
+    role: user.role,
   };
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
-  res.cookie("accessToken", accessToken, baseOptions);
+  res.cookie("accessToken", accessToken, accessTokenOptions);
   res.cookie("refreshToken", refreshToken, refreshTokenOptions);
 
   await client.set(`refresh-token:${user.id}`, refreshToken, {
@@ -144,8 +155,6 @@ export const loginUser = AsyncHandler(async (req: any, res: any) => {
  */
 export const verifyEmail = AsyncHandler(async (req: any, res: any) => {
   const { id, verifyToken } = req.query;
-
-  // console.log(id,verify);
 
   const storedVerifyToken = await client.get(`verify-token:${id}`);
 
@@ -171,7 +180,7 @@ export const verifyEmail = AsyncHandler(async (req: any, res: any) => {
 export const logoutUser = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
 
-  res.clearCookie("accessToken", baseOptions);
+  res.clearCookie("accessToken", accessTokenOptions);
   res.clearCookie("refreshToken", refreshTokenOptions);
 
   await client.del(`refresh-token:${userId}`);
@@ -223,7 +232,7 @@ export const resetPassword = AsyncHandler(async (req: any, res: any) => {
 
   const hashedPassword = await hashPassword(newPassword);
 
-  const user = await prisma.user.update({
+  await prisma.user.update({
     where: {
       email,
     },
@@ -251,15 +260,13 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     if (!refreshToken) {
       return res.status(401).json(new ApiError(401, "Unauthorized request"));
     }
-    interface IPayload {
-      id: string;
-      email: string;
-    }
+
     const decoded = jwt.verify(
       refreshToken,
       ENV.REFRESH_TOKEN_SECRET
     ) as IPayload;
-    const { id, email } = decoded;
+
+    const { id, email, role } = decoded;
 
     const storedRefreshToken = await client.get(`refresh-token:${id}`);
 
@@ -268,12 +275,14 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         .status(401)
         .json(new ApiError(401, "Session expired. Please login again."));
     }
+    const payload = {
+      id,
+      email,
+      role,
+    };
+    const accessToken = generateAccessToken(payload);
 
-    const accessToken = jwt.sign({ id, email }, ENV.ACCESS_TOKEN_SECRET, {
-      expiresIn: "15m",
-    });
-
-    res.cookie("accessToken", accessToken, baseOptions);
+    res.cookie("accessToken", accessToken, accessTokenOptions);
 
     return res.status(200).json(
       new ApiResponse(200, "Access token refreshed successfully", {
@@ -283,11 +292,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error(error);
 
-    if (error.name === "TokenExpiredError") {
-      return res
-        .status(401)
-        .json(new ApiError(401, "Session expired, Please login again"));
-    }
-    return res.status(401).json(new ApiError(401, "Invalid Token"));
+    return res
+      .status(401)
+      .json(new ApiError(401, "Session expired, Please login again"));
   }
 };

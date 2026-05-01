@@ -4,9 +4,9 @@ import ApiResponse from "../utils/api-response.js";
 import AsyncHandler from "../utils/async-handler.js";
 
 /**
- * -@route POST /question/:questionId/answers
- * -@desc create answer a question controller
- * -@access private
+ * @route POST /question/:questionId/answers
+ * @desc create answer a question controller
+ * @access private
  */
 export const createAnswer = AsyncHandler(async (req: any, res: any) => {
   const { content } = req.body;
@@ -27,9 +27,9 @@ export const createAnswer = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route GET /question/:questionId/answers
- * -@desc get all answers for a question controller
- * -@access public
+ * @route GET /question/:questionId/answers
+ * @desc get all answers for a question controller
+ * @access public
  */
 export const getAnswers = AsyncHandler(async (req: any, res: any) => {
   const { questionId } = req.params;
@@ -53,9 +53,9 @@ export const getAnswers = AsyncHandler(async (req: any, res: any) => {
   );
 });
 /**
- * -@route PUT /question/:questionId/answers/:answerId
- * -@desc update answer for a question controller
- * -@access private
+ * @route PUT /question/:questionId/answers/:answerId
+ * @desc update answer for a question controller
+ * @access private
  */
 export const updateAnswerById = AsyncHandler(async (req: any, res: any) => {
   const data = req.body;
@@ -82,9 +82,9 @@ export const updateAnswerById = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route DELETE /question/:questionId/answers/:answerId
- * -@desc delete answer of a question controller
- * -@access private
+ * @route DELETE /question/:questionId/answers/:answerId
+ * @desc delete answer of a question controller
+ * @access private
  */
 export const deleteAnswerById = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
@@ -108,9 +108,9 @@ export const deleteAnswerById = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route PATCH /question/:questionId/answers/:answerId
- * -@desc mark answer as accepted for a question controller
- * -@access private
+ * @route PATCH /question/:questionId/answers/:answerId
+ * @desc mark answer as accepted for a question controller
+ * @access private
  */
 export const markAnswerAsAccepted = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;

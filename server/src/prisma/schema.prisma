@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String     @id @default(uuid())
+  email      String     @unique
+  avatarUrl  String
+  createdAt  DateTime   @default(now())
+  isVerified Boolean    @default(false)
+  password   String
+  reputation Int        @default(0)
+  role       Role       @default(USER)
+  updatedAt  DateTime   @updatedAt
+  username   String     @unique
+  answers    Answer[]
+  comments   Comment[]
+  questions  Question[]
+  votes      Vote[]
+}
+
+model Question {
+  id           String    @id @default(uuid())
+  title        String
+  content      String
+  attachmentId String?
+  authorId     String
+  voteCount    Int       @default(0)
+  tags         String[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  answers      Answer[]
+  comments     Comment[]
+  author       User      @relation(fields: [authorId], references: [id])
+  votes        Vote[]
+}
+
+model Answer {
+  id         String    @id @default(uuid())
+  content    String
+  authorId   String
+  questionId String
+  isAccepted Boolean   @default(false)
+  voteCount  Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  author     User      @relation(fields: [authorId], references: [id])
+  question   Question  @relation(fields: [questionId], references: [id])
+  comments   Comment[]
+  votes      Vote[]
+}
+
+model Comment {
+  id         String    @id @default(uuid())
+  authorId   String
+  content    String
+  questionId String?
+  answerId   String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  answer     Answer?   @relation(fields: [answerId], references: [id])
+  author     User      @relation(fields: [authorId], references: [id])
+  question   Question? @relation(fields: [questionId], references: [id])
+}
+
+model Vote {
+  id         String     @id @default(uuid())
+  votedById  String
+  questionId String?
+  answerId   String?
+  voteStatus VoteStatus
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  answer     Answer?    @relation(fields: [answerId], references: [id])
+  question   Question?  @relation(fields: [questionId], references: [id])
+  votedBy    User       @relation(fields: [votedById], references: [id])
+
+  @@unique([votedById, questionId])
+  @@unique([votedById, answerId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum VoteStatus {
+  UPVOTED
+  DOWNVOTED
+}

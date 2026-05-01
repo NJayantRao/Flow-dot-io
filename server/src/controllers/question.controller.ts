@@ -34,9 +34,6 @@ export const createQuestion = AsyncHandler(async (req: any, res: any) => {
     );
     attachment = cloudinaryResult.secure_url;
   }
-
-  console.log(attachment);
-
   const authorId = user.id;
 
   //create question
