@@ -1,21 +1,31 @@
 import express from "express";
-import {
-  deleteUser,
-  getUserProfile,
-  updateUserProfile,
-} from "../controllers/user.controller.js";
 import { authMiddleware } from "../middlewares/jwt.js";
-import { usernameUpdateValidation } from "../middlewares/validator.js";
+import {
+  changePasswordValidation,
+  usernameUpdateValidation,
+} from "../middlewares/validator.js";
+import {
+  changePassword,
+  deleteProfile,
+  getProfile,
+  updateProfile,
+} from "../controllers/user.controller.js";
 
 const router = express.Router();
 
-router.get("/profile", authMiddleware, getUserProfile);
+router.get("/profile", authMiddleware, getProfile);
+router.patch(
+  "/change-password",
+  authMiddleware,
+  changePasswordValidation,
+  changePassword
+);
 router.patch(
   "/profile",
   authMiddleware,
   usernameUpdateValidation,
-  updateUserProfile
+  updateProfile
 );
-router.delete("/", authMiddleware, deleteUser);
+router.delete("/profile", authMiddleware, deleteProfile);
 
 export { router as userRouter };

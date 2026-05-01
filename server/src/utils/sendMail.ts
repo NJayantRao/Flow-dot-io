@@ -2,7 +2,7 @@ import { generateRegistrationEmail } from "../emails/registerUserMail.js";
 import { generateResetPasswordEmail } from "../emails/resetPasswordMail.js";
 import { resend } from "../lib/resend.js";
 
-export const sendRegistrationEmail = async (
+const sendRegistrationEmail = async (
   email: string,
   username: string,
   verifyLink: string
@@ -17,25 +17,30 @@ export const sendRegistrationEmail = async (
       html: html,
     });
 
-    console.log(info);
+    // console.log(info);
   } catch (error) {
     console.error("Error sending registration email:", error);
   }
 };
 
-export const sendResetPasswordMail = async (
+const sendResetPasswordMail = async (
   email: string,
   username: string,
   otp: number
 ) => {
-  const { html, text } = generateResetPasswordEmail(username, otp);
-  const info = await resend.emails.send({
-    from: "Flow <support@nagriksetu.site>",
-    to: email,
-    subject: "Your Flow Password Reset OTP",
-    text: text,
-    html: html,
-  });
-
-  console.log(info);
+  try {
+    const { html, text } = generateResetPasswordEmail(username, otp);
+    const info = await resend.emails.send({
+      from: "Flow <support@nagriksetu.site>",
+      to: email,
+      subject: "Your Flow Password Reset OTP",
+      text: text,
+      html: html,
+    });
+    // console.log(info);
+  } catch (error) {
+    console.error("Error sending reset password email:", error);
+  }
 };
+
+export { sendRegistrationEmail, sendResetPasswordMail };

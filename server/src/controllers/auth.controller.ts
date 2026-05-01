@@ -14,7 +14,7 @@ import crypto from "crypto";
 import {
   sendRegistrationEmail,
   sendResetPasswordMail,
-} from "../utils/userMail.js";
+} from "../utils/sendMail.js";
 import jwt from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 import { accessTokenOptions, refreshTokenOptions } from "../utils/constants.js";
