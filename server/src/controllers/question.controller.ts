@@ -5,11 +5,11 @@ import ApiResponse from "../utils/api-response.js";
 import AsyncHandler from "../utils/async-handler.js";
 
 /**
- * -@route POST /questions
- * -@desc create question controller
- * -@access private
+ * @route POST /questions
+ * @description create question controller
+ * @access private
  */
-export const createQuestion = AsyncHandler(async (req: any, res: any) => {
+const createQuestion = AsyncHandler(async (req: any, res: any) => {
   const { title, content } = req.body;
   const id = req.user.id;
   let attachment = null;
@@ -52,13 +52,15 @@ export const createQuestion = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route GET /questions
- * -@desc get questions controller
- * -@access public
+ * @route GET /questions
+ * @description get questions controller
+ * @access public
  */
-export const getQuestions = AsyncHandler(async (req: any, res: any) => {
+const getQuestions = AsyncHandler(async (req: any, res: any) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
+  const sortBy = req.query.sortBy || "createdAt";
+  const order = req.query.order || "desc";
   const skip = (page - 1) * limit;
 
   const totalQuestions = await prisma.question.count();
@@ -67,7 +69,7 @@ export const getQuestions = AsyncHandler(async (req: any, res: any) => {
     skip,
     take: limit,
     orderBy: {
-      createdAt: "desc",
+      [sortBy]: order,
     },
   });
 
@@ -80,11 +82,11 @@ export const getQuestions = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route GET /questions/:questionId
- * -@desc get question by id controller
- * -@access public
+ * @route GET /questions/:questionId
+ * @description get question by id controller
+ * @access public
  */
-export const getQuestionById = AsyncHandler(async (req: any, res: any) => {
+const getQuestionById = AsyncHandler(async (req: any, res: any) => {
   const { questionId } = req.params;
 
   const question = await prisma.question.findUnique({
@@ -111,12 +113,15 @@ export const getQuestionById = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route PUT /questions/:questionId
- * -@desc update question by id controller
- * -@access private
+ * @route PATCH /questions/:questionId
+ * @description update question by id controller
+ * @access private
  */
-export const updateQuestionById = AsyncHandler(async (req: any, res: any) => {
-  const data = req.body;
+const updateQuestionById = AsyncHandler(async (req: any, res: any) => {
+  const data: any = {};
+
+  if (req.body?.title) data.title = req.body.title;
+  if (req.body?.content) data.content = req.body.content;
   const { questionId } = req.params;
   const userId = req.user.id;
   let attachment = null;
@@ -156,11 +161,11 @@ export const updateQuestionById = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route DELETE /questions/:questionId
- * -@desc delete question by id controller
- * -@access private
+ * @route DELETE /questions/:questionId
+ * @description delete question by id controller
+ * @access private
  */
-export const deleteQuestionById = AsyncHandler(async (req: any, res: any) => {
+const deleteQuestionById = AsyncHandler(async (req: any, res: any) => {
   const { questionId } = req.params;
 
   const question = await prisma.question.findUnique({
@@ -189,3 +194,11 @@ export const deleteQuestionById = AsyncHandler(async (req: any, res: any) => {
       new ApiResponse(200, "Question deleted successfully", deletedQuestion)
     );
 });
+
+export {
+  createQuestion,
+  getQuestions,
+  getQuestionById,
+  updateQuestionById,
+  deleteQuestionById,
+};

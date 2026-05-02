@@ -10,13 +10,13 @@ import AsyncHandler from "../utils/async-handler.js";
  */
 export const createAnswer = AsyncHandler(async (req: any, res: any) => {
   const { content } = req.body;
-  const userId = req.user.id;
+  const { id } = req.user;
   const { questionId } = req.params;
 
   const answer = await prisma.answer.create({
     data: {
       content,
-      authorId: userId,
+      authorId: id,
       questionId,
     },
   });
@@ -36,6 +36,8 @@ export const getAnswers = AsyncHandler(async (req: any, res: any) => {
 
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
+  const sortBy = req.query.sortBy || "createdAt";
+  const order = req.query.order || "desc";
   const skip = (page - 1) * limit;
 
   const answers = await prisma.answer.findMany({
@@ -44,14 +46,16 @@ export const getAnswers = AsyncHandler(async (req: any, res: any) => {
     },
     skip,
     take: limit,
-    orderBy: { createdAt: "desc" },
+    orderBy: { [sortBy]: order },
   });
+
   return res.status(200).json(
     new ApiResponse(200, "Answers retrieved successfully", {
       answers,
     })
   );
 });
+
 /**
  * @route PUT /question/:questionId/answers/:answerId
  * @desc update answer for a question controller
@@ -60,7 +64,7 @@ export const getAnswers = AsyncHandler(async (req: any, res: any) => {
 export const updateAnswerById = AsyncHandler(async (req: any, res: any) => {
   const data = req.body;
   const userId = req.user.id;
-  const { questionId, answerId } = req.params;
+  const { answerId } = req.params;
 
   const answer = await prisma.answer.findUnique({ where: { id: answerId } });
   if (!answer)
@@ -88,7 +92,7 @@ export const updateAnswerById = AsyncHandler(async (req: any, res: any) => {
  */
 export const deleteAnswerById = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
-  const { questionId, answerId } = req.params;
+  const { answerId } = req.params;
 
   const answer = await prisma.answer.findUnique({ where: { id: answerId } });
   if (!answer)

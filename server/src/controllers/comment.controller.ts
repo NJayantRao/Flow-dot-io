@@ -4,20 +4,32 @@ import ApiResponse from "../utils/api-response.js";
 import AsyncHandler from "../utils/async-handler.js";
 
 /**
- * -@route POST /question/:questionId/comments
- * -@desc create comment for question controller
- * -@access  private
+ * @route POST /question/:questionId/comments
+ * @desc create comment for question controller
+ * @access  private
  */
 export const createQuestionComments = AsyncHandler(
   async (req: any, res: any) => {
-    const userId = req.user.id;
+    const { id } = req.user;
     const { questionId } = req.params;
     const { content } = req.body;
+
+    if (!content) {
+      return res.status(400).json(new ApiError(400, "Content is required"));
+    }
+
+    const question = await prisma.question.findUnique({
+      where: { id: questionId },
+    });
+
+    if (!question) {
+      return res.status(404).json(new ApiError(404, "Question not found"));
+    }
 
     const comment = await prisma.comment.create({
       data: {
         content,
-        authorId: userId,
+        authorId: id,
         questionId,
       },
     });
@@ -29,23 +41,34 @@ export const createQuestionComments = AsyncHandler(
 );
 
 /**
- * -@route GET /question/:questionId/comments
- * -@desc get comments for question controller
- * -@access public
+ * @route GET /question/:questionId/comments
+ * @desc get comments for question controller
+ * @access public
  */
 export const getQuestionComments = AsyncHandler(async (req: any, res: any) => {
   const { questionId } = req.params;
 
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
+  const sortBy = req.query.sortBy || "createdAt";
+  const order = req.query.order || "desc";
   const skip = (page - 1) * limit;
+
+  const question = await prisma.question.findUnique({
+    where: { id: questionId },
+  });
+
+  if (!question) {
+    return res.status(404).json(new ApiError(404, "Question not found"));
+  }
+
   const comments = await prisma.comment.findMany({
     where: {
       questionId,
     },
     skip,
     take: limit,
-    orderBy: { createdAt: "desc" },
+    orderBy: { [sortBy]: order },
   });
 
   return res
@@ -54,15 +77,28 @@ export const getQuestionComments = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route PUT /question/:questionId/comments/:commentId
- * -@desc update comment for question controller
- * -@access private
+ * @route PUT /question/:questionId/comments/:commentId
+ * @desc update comment for question controller
+ * @access private
  */
 export const updateQuestionComments = AsyncHandler(
   async (req: any, res: any) => {
-    const data = req.body;
-    const userId = req.user.id;
+    const data: any = {};
+    if (req.body?.content) data.content = req.body.content;
+    const { id } = req.user;
     const { questionId, commentId } = req.params;
+
+    if (!data.content) {
+      return res.status(400).json(new ApiError(400, "Content is required"));
+    }
+
+    const question = await prisma.question.findUnique({
+      where: { id: questionId },
+    });
+
+    if (!question) {
+      return res.status(404).json(new ApiError(404, "Question not found"));
+    }
 
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
@@ -76,7 +112,7 @@ export const updateQuestionComments = AsyncHandler(
         .json(new ApiError(400, "Invalid question reference"));
     }
 
-    if (userId !== comment.authorId) {
+    if (id !== comment.authorId) {
       return res
         .status(403)
         .json(
@@ -97,14 +133,22 @@ export const updateQuestionComments = AsyncHandler(
 );
 
 /**
- * -@route DELETE /question/:questionId/comments/:commentId
- * -@desc delete comment for question controller
- * -@access private
+ * @route DELETE /question/:questionId/comments/:commentId
+ * @desc delete comment for question controller
+ * @access private
  */
 export const deleteQuestionComments = AsyncHandler(
   async (req: any, res: any) => {
-    const userId = req.user.id;
+    const { id } = req.user;
     const { questionId, commentId } = req.params;
+
+    const question = await prisma.question.findUnique({
+      where: { id: questionId },
+    });
+
+    if (!question) {
+      return res.status(404).json(new ApiError(404, "Question not found"));
+    }
 
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
@@ -118,7 +162,7 @@ export const deleteQuestionComments = AsyncHandler(
         .json(new ApiError(400, "Invalid question reference"));
     }
 
-    if (userId !== comment.authorId) {
+    if (id !== comment.authorId) {
       return res
         .status(403)
         .json(
@@ -139,19 +183,31 @@ export const deleteQuestionComments = AsyncHandler(
 );
 
 /**
- * -@route POST /question/:questionId/answers/:answerId/comments
- * -@desc create comment for answer controller
- * -@access private
+ * @route POST /question/:questionId/answers/:answerId/comments
+ * @desc create comment for answer controller
+ * @access private
  */
 export const createAnswerComments = AsyncHandler(async (req: any, res: any) => {
-  const userId = req.user.id;
-  const { questionId, answerId } = req.params;
+  const { id } = req.user;
+  const { answerId } = req.params;
   const { content } = req.body;
+
+  const answer = await prisma.answer.findUnique({
+    where: { id: answerId },
+  });
+
+  if (!answer) {
+    return res.status(404).json(new ApiError(404, "Answer not found"));
+  }
+
+  if (!content) {
+    return res.status(400).json(new ApiError(400, "Content is required"));
+  }
 
   const comment = await prisma.comment.create({
     data: {
       content,
-      authorId: userId,
+      authorId: id,
       answerId,
     },
   });
@@ -162,22 +218,32 @@ export const createAnswerComments = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route GET /question/:questionId/answers/:answerId/comments
- * -@desc get comments for answer controller
- * -@access public
+ * @route GET /question/:questionId/answers/:answerId/comments
+ * @desc get comments for answer controller
+ * @access public
  */
 export const getAnswerComments = AsyncHandler(async (req: any, res: any) => {
-  const { questionId, answerId } = req.params;
+  const { answerId } = req.params;
 
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
+  const sortBy = req.query.sortBy || "createdAt";
+  const order = req.query.order || "desc";
   const skip = (page - 1) * limit;
+
+  const answer = await prisma.answer.findUnique({
+    where: { id: answerId },
+  });
+
+  if (!answer) {
+    return res.status(404).json(new ApiError(404, "Answer not found"));
+  }
 
   const comments = await prisma.comment.findMany({
     where: { answerId },
     skip,
     take: limit,
-    orderBy: { createdAt: "desc" },
+    orderBy: { [sortBy]: order },
   });
 
   return res
@@ -186,14 +252,26 @@ export const getAnswerComments = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route PUT /question/:questionId/answers/:answerId/comments/:commentId
- * -@desc  update comment for answer controller
- * -@access private
+ * @route PUT /question/:questionId/answers/:answerId/comments/:commentId
+ * @desc  update comment for answer controller
+ * @access private
  */
 export const updateAnswerComments = AsyncHandler(async (req: any, res: any) => {
-  const userId = req.user.id;
+  const { id } = req.user;
   const { commentId, answerId } = req.params;
-  const data = req.body;
+  const data: any = {};
+  if (req.body?.content) data.content = req.body.content;
+
+  if (!data.content) {
+    return res.status(400).json(new ApiError(400, "Content is required"));
+  }
+
+  const answer = await prisma.answer.findUnique({
+    where: { id: answerId },
+  });
+
+  if (!answer)
+    return res.status(404).json(new ApiError(404, "Answer not found"));
 
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
@@ -205,7 +283,7 @@ export const updateAnswerComments = AsyncHandler(async (req: any, res: any) => {
   if (comment.answerId !== answerId)
     return res.status(400).json(new ApiError(400, "Invalid answer reference"));
 
-  if (comment.authorId !== userId)
+  if (comment.authorId !== id)
     return res
       .status(403)
       .json(new ApiError(403, "Not authorized to update this comment"));
@@ -221,17 +299,24 @@ export const updateAnswerComments = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route DELETE /question/:questionId/answers/:answerId/comments/:commentId
- * -@desc delete comment for answer controller
- * -@access private
+ * @route DELETE /question/:questionId/answers/:answerId/comments/:commentId
+ * @desc delete comment for answer controller
+ * @access private
  */
 export const deleteAnswerComments = AsyncHandler(async (req: any, res: any) => {
-  const userId = req.user.id;
+  const { id } = req.user;
   const { commentId, answerId } = req.params;
 
   const comment = await prisma.comment.findUnique({
     where: { id: commentId },
   });
+
+  const answer = await prisma.answer.findUnique({
+    where: { id: answerId },
+  });
+
+  if (!answer)
+    return res.status(404).json(new ApiError(404, "Answer not found"));
 
   if (!comment)
     return res.status(404).json(new ApiError(404, "Comment not found"));
@@ -239,7 +324,7 @@ export const deleteAnswerComments = AsyncHandler(async (req: any, res: any) => {
   if (comment.answerId !== answerId)
     return res.status(400).json(new ApiError(400, "Invalid answer reference"));
 
-  if (comment.authorId !== userId)
+  if (comment.authorId !== id)
     return res
       .status(403)
       .json(new ApiError(403, "Not authorized to delete this comment"));

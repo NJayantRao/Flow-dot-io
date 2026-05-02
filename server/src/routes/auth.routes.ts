@@ -24,7 +24,7 @@ router.post("/logout", authMiddleware, logout);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPasswordValidation, resetPassword);
 
-router.post("/verify-email", verifyEmail);
+router.get("/verify-email", verifyEmail);
 router.post("/refresh-token", refreshAccessToken);
 
 export { router as authRouter };
