@@ -5,9 +5,9 @@ import AsyncHandler from "../utils/async-handler.js";
 import { reputationActions } from "../utils/constants.js";
 
 /**
- * -@route POST /questions/:questionId/upvote
- * -@desc upvote question controller
- * -@access private
+ * @route POST /questions/:questionId/upvote
+ * @desc upvote question controller
+ * @access private
  */
 export const upvoteQuestion = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
@@ -60,9 +60,9 @@ export const upvoteQuestion = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route POST /questions/:questionId/downvote
- * -@desc downvote question controller
- * -@access private
+ * @route POST /questions/:questionId/downvote
+ * @desc downvote question controller
+ * @access private
  */
 export const downvoteQuestion = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
@@ -115,9 +115,9 @@ export const downvoteQuestion = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route POST /answers/:answerId/upvote
- * -@desc upvote answer controller
- * -@access private
+ * @route POST /answers/:answerId/upvote
+ * @desc upvote answer controller
+ * @access private
  */
 export const upvoteAnswer = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
@@ -170,9 +170,9 @@ export const upvoteAnswer = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
- * -@route POST /answers/:answerId/downvote
- * -@desc downvote answer controller
- * -@access private
+ * @route POST /answers/:answerId/downvote
+ * @desc downvote answer controller
+ * @access private
  */
 export const downvoteAnswer = AsyncHandler(async (req: any, res: any) => {
   const userId = req.user.id;
