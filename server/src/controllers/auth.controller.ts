@@ -209,6 +209,40 @@ const verifyEmail = AsyncHandler(async (req: any, res: any) => {
 });
 
 /**
+ * @route POST /auth/resend-verification
+ * @desc Resend email verification link
+ * @access public
+ */
+const resendVerificationEmail = AsyncHandler(async (req: any, res: any) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json(new ApiError(400, "Email is required"));
+  }
+
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    return res.status(404).json(new ApiError(404, "User not found"));
+  }
+
+  if (user.isVerified) {
+    return res.status(400).json(new ApiError(400, "Email is already verified"));
+  }
+
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  await client.set(`verify-token:${user.id}`, verificationToken, {
+    EX: 10 * 60,
+  });
+  const verificationLink = `${req.protocol}://${req.get("host")}/api/v1/auth/verify-email?id=${user.id}&verifyToken=${verificationToken}`;
+  sendRegistrationEmail(user.email, user.username, verificationLink);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Verification email sent successfully"));
+});
+
+/**
  * @route POST /auth/forgot-password
  * @desc forgot password controller
  * @access public
@@ -324,6 +358,7 @@ export {
   login,
   logout,
   verifyEmail,
+  resendVerificationEmail,
   forgotPassword,
   resetPassword,
   refreshAccessToken,
